@@ -10,9 +10,8 @@ data/registro/*
 data/base/avisos/
 reports/*.txt
 
-# El registro oficial es un enlace a la copia del p02: pesado, publico y se
-# vuelve a bajar de datos.gob.ar.
-data/registro
+# El registro oficial: 55 MB, publico, se vuelve a bajar de datos.gob.ar.
+data/registro/*.csv
 
 # El fixture de costo son 953 KB de relleno repetido. Se regenera exacto con
 # `python src/atacar.py --fixtures`; versionarlo seria guardar ruido.

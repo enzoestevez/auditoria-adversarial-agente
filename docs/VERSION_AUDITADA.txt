@@ -9,6 +9,16 @@ Archivos copiados desde p02 en ese commit:
   sistema/comun.py       el nucleo compartido (normalizadores, llave, confianza)
   sistema/reprocesar.py   para reevaluar defensas sin volver a pagar llamadas
 
+Registro oficial (data/registro/Convocatorias.csv, 55 MB, git-ignorado):
+  128.951 convocatorias de COMPR.AR, bajado de datos.gob.ar.
+  Dataset: Sistema de Contrataciones Electronicas, recurso "Convocatorias
+  2016 - 2026", copiado desde p02 el 21/10/2026.
+
+  Primero puse un enlace simbolico a ../p02/data/registro. Fue un error doble:
+  Windows no lo resuelve, y viola la regla del proyecto 02 de que la entrada se
+  COPIA y no se referencia, porque un repo que necesita una carpeta hermana no
+  versionada no se puede clonar ni reproducir. Ahora es una copia real.
+
 Linea base limpia:
   data/base/traza-reproceso.jsonl   267 avisos, resultado sin ataque
   data/base/indice_p01.json         metadatos de los avisos
