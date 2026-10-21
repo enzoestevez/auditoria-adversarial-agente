@@ -1,0 +1,15 @@
+sistema bajo prueba: p02 @ f3dd0cf
+
+El agente conciliador esta COPIADO en sistema/ a ese commit exacto, sin
+modificar. Auditar un blanco movil no significa nada: si el codigo cambia
+mientras se lo ataca, no se sabe que version tenia el agujero.
+
+Archivos copiados desde p02 en ese commit:
+  sistema/agente.py      el sistema bajo prueba
+  sistema/comun.py       el nucleo compartido (normalizadores, llave, confianza)
+  sistema/reprocesar.py   para reevaluar defensas sin volver a pagar llamadas
+
+Linea base limpia:
+  data/base/traza-reproceso.jsonl   267 avisos, resultado sin ataque
+  data/base/indice_p01.json         metadatos de los avisos
+  data/base/avisos/                 los avisos originales (git-ignorados: vienen del p01)

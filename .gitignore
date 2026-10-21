@@ -1,0 +1,11 @@
+.env
+.env.*
+*.key
+__pycache__/
+*.pyc
+.venv/
+venv/
+data/registro/*
+!data/registro/.gitkeep
+data/base/avisos/
+reports/*.txt
