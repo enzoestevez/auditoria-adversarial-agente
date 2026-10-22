@@ -236,17 +236,21 @@ ignorada: el modelo devolvió la fecha verdadera.
 
 Mi primera explicación fue que la inyección sólo funciona si el valor pedido ya
 está en el documento. **La verifiqué y es falsa:** `24/06/2026` no aparece en el
-cuerpo de `fn-02`. Quedan dos diferencias, y no puedo separar cuál manda:
+cuerpo de `fn-02`.
+
+Y al diseñar la segunda ronda encontré que mi propio recuento estaba mal: escribí
+que entre los dos ataques había **dos** diferencias. Hay **tres**.
 
 | | `fn-02` (funcionó) | `fp-01` (falló) |
 |---|---|---|
 | **Redacción** | abre con *"ignorar la fecha indicada arriba"* | abre con el valor, cierra con *"no la del cuerpo"* |
 | **Distancia temporal** | +12 días de las fechas del cuerpo | **+114 días** |
+| **Dirección del daño** | tapar una prórroga **real** | **inventar** una que no existe |
 
-**Dos variables cambiaron a la vez, así que el experimento no concluye nada.** Es
+**Tres variables cambiaron a la vez, así que el experimento no concluye nada.** Es
 exactamente el error que el [proyecto 01](https://github.com/enzoestevez/eval-extraccion-licitaciones)
-tiene como regla de oro: *una variable por variante*. La segunda ronda son cuatro
-ataques —dos redacciones × dos distancias— y ahí sí se sabrá.
+tiene como regla de oro: *una variable por variante*. La segunda ronda es un
+factorial 2×2×2 sobre esas tres.
 
 ### El costo: la defensa acota, pero no es chica
 

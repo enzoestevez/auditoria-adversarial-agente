@@ -51,7 +51,11 @@ sys.path.insert(0, str(RAIZ / "src"))
 
 import agente  # noqa: E402  el sistema bajo prueba, sin modificar
 import comun  # noqa: E402
-from ataques import BATERIA, CLASES, POR_ID  # noqa: E402
+from ataques import BATERIA, CLASES  # noqa: E402
+from ataques2 import BATERIA_2  # noqa: E402
+
+TODOS = BATERIA + BATERIA_2
+RONDA = {a.id: (2 if a.id.startswith("r2-") else 1) for a in TODOS}
 
 BASE = RAIZ / "data" / "base"
 FIXTURES = RAIZ / "data" / "ataques"
@@ -85,11 +89,11 @@ def construir_fixture(a, m: dict) -> tuple[Path, str, str]:
 
 def listar() -> None:
     print(f"{'id':34} {'clase':16} {'aviso':10} {'realista':9} que prueba")
-    for a in BATERIA:
+    for a in TODOS:
         print(f"{a.id:34} {a.clase:16} {a.aviso:10} {'si' if a.realista else 'no':9} {a.que_prueba[:60]}")
-    print(f"\n{len(BATERIA)} ataques · {len(set(a.clase for a in BATERIA))} clases")
+    print(f"\n{len(TODOS)} ataques · ronda 1: {len(BATERIA)} · ronda 2: {len(BATERIA_2)}")
     print(f"realistas (un organismo podria hacerlo sin levantar sospecha): "
-          f"{sum(1 for a in BATERIA if a.realista)}/{len(BATERIA)}")
+          f"{sum(1 for a in TODOS if a.realista)}/{len(TODOS)}")
 
 
 def main() -> None:
@@ -100,15 +104,22 @@ def main() -> None:
     ap.add_argument("--fixtures", action="store_true",
                     help="generar los avisos mutados sin llamar al modelo")
     ap.add_argument("--presupuesto", type=float, default=0.50)
+    ap.add_argument("--ronda", type=int, choices=(1, 2), help="sólo una ronda")
+    ap.add_argument("--repeticiones", type=int, default=1,
+                    help="correr cada ataque N veces. Con N>1 se mide ADEMAS el "
+                         "determinismo: temperature=0 no lo garantiza en un "
+                         "modelo servido, y un resultado que cambia entre "
+                         "corridas no sostiene ninguna conclusión.")
     args = ap.parse_args()
 
     if args.listar:
         listar()
         return
 
-    elegidos = [a for a in BATERIA
+    elegidos = [a for a in TODOS
                 if (not args.id or a.id == args.id)
-                and (not args.clase or a.clase == args.clase)]
+                and (not args.clase or a.clase == args.clase)
+                and (not args.ronda or RONDA[a.id] == args.ronda)]
     if not elegidos:
         sys.exit(f"Ningún ataque coincide. Probá --listar.")
 
@@ -150,41 +161,61 @@ def main() -> None:
             break
 
         t0 = time.perf_counter()
-        r = agente.extraer_con_reintentos(mutado, verboso=False)
-        caso = {"aviso": a.aviso, "modelo": agente.MODELO,
-                "tokens_in": r["tokens_in"], "tokens_out": r["tokens_out"],
-                "latencia_ms": r["ms"],
-                "costo_usd": round(agente.costo(r["tokens_in"], r["tokens_out"]), 6)}
-        gastado += caso["costo_usd"]
+        repes = []
+        for i in range(args.repeticiones):
+            r = agente.extraer_con_reintentos(mutado, verboso=False)
+            caso = {"aviso": a.aviso, "modelo": agente.MODELO,
+                    "tokens_in": r["tokens_in"], "tokens_out": r["tokens_out"],
+                    "latencia_ms": r["ms"],
+                    "costo_usd": round(agente.costo(r["tokens_in"], r["tokens_out"]), 6)}
+            gastado += caso["costo_usd"]
 
-        if r["error"]:
-            atacado = caso | {"decision": "error_extraccion", "motivo": r["error"]}
-        else:
-            atacado = agente.decidir(caso, r["datos"], m[a.aviso]["publicado_desde"],
-                                     idx, comun.UMBRAL)
+            if r["error"]:
+                atacado = caso | {"decision": "error_extraccion", "motivo": r["error"]}
+            else:
+                atacado = agente.decidir(caso, r["datos"], m[a.aviso]["publicado_desde"],
+                                         idx, comun.UMBRAL)
 
-        funciono = bool(a.exito(limpio, atacado))
+            repes.append({
+                "funciono": bool(a.exito(limpio, atacado)),
+                "decision": atacado.get("decision"),
+                "motivo": atacado.get("motivo"),
+                "discrepancias": atacado.get("discrepancias"),
+                "llave": atacado.get("llave"),
+                "proceso": atacado.get("proceso"),
+                "extraido": atacado.get("extraido"),
+                "tokens_in": atacado.get("tokens_in"),
+            })
+
+        exitos = sum(x["funciono"] for x in repes)
+        # ESTABLE = las N repeticiones dieron el mismo resultado. Un ataque
+        # inestable no sostiene ninguna conclusión, por mas que "funcione".
+        estable = exitos in (0, len(repes))
+        ultimo = repes[-1]
         reg = {
-            "ataque": a.id, "clase": a.clase, "aviso": a.aviso,
+            "ataque": a.id, "ronda": RONDA[a.id], "clase": a.clase, "aviso": a.aviso,
             "realista": a.realista, "que_prueba": a.que_prueba,
             "hallazgo_esperado": a.hallazgo_esperado,
-            "funciono": funciono,
+            "funciono": exitos > len(repes) / 2,
+            "exitos": exitos, "repeticiones": len(repes), "estable": estable,
             "cuando": datetime.now(timezone.utc).isoformat(timespec="seconds"),
             "fixture": ruta.name,
             "caracteres": {"original": len(original), "mutado": len(mutado)},
             "limpio": {k: limpio.get(k) for k in
                        ("decision", "llave", "proceso", "confianza_emparejamiento",
                         "discrepancias", "tokens_in")},
-            "atacado": {k: atacado.get(k) for k in
+            "atacado": {k: ultimo.get(k) for k in
                         ("decision", "motivo", "llave", "proceso",
-                         "confianza_emparejamiento", "discrepancias", "tokens_in")},
-            "extraido_atacado": atacado.get("extraido"),
+                         "discrepancias", "tokens_in")},
+            "extraido_atacado": ultimo.get("extraido"),
+            "repes": repes,
             "segundos": round(time.perf_counter() - t0, 1),
         }
         salida.append(reg)
-        marca = "FUNCIONÓ" if funciono else "falló"
+        marca = "FUNCIONÓ" if reg["funciono"] else "falló"
+        aviso_est = "" if estable else "  ! INESTABLE"
         print(f"  {n}/{len(elegidos)}  {a.id:34} {marca:10} "
-              f"{limpio['decision']} -> {atacado['decision']}")
+              f"{exitos}/{len(repes)}  {limpio['decision']} -> {ultimo['decision']}{aviso_est}")
 
     with (REPORTES / "ataques.jsonl").open("w", encoding="utf-8") as f:
         for r in salida:
@@ -200,6 +231,19 @@ def main() -> None:
         if de_clase:
             ok = sum(r["funciono"] for r in de_clase)
             print(f"  {c:16} {ok}/{len(de_clase)}")
+    inestables = [r for r in salida if not r["estable"]]
+    if inestables:
+        print(f"\n  ! {len(inestables)} ataque(s) dieron resultados DISTINTOS entre "
+              f"repeticiones, con temperature=0:")
+        for r in inestables:
+            print(f"      {r['ataque']:34} {r['exitos']}/{r['repeticiones']}")
+        print("    Ninguna conclusión se apoya en esos, y la inestabilidad es un")
+        print("    hallazgo en si misma: el sistema no es reproducible.")
+    elif salida and salida[0]["repeticiones"] > 1:
+        print(f"\n  Las {salida[0]['repeticiones']} repeticiones de cada ataque dieron "
+              f"el MISMO resultado: con temperature=0 el sistema fue reproducible "
+              f"en esta corrida.")
+
     reales = [r for r in salida if r["realista"]]
     if reales:
         print(f"\n  de los {len(reales)} ataques que un organismo podría hacer sin "

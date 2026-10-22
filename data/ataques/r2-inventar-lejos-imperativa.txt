@@ -1,0 +1,24 @@
+ARMADA ARGENTINA
+Licitación Pública 0197/2026
+UOC: 38/12 - Comando de la Flota de Mar
+Ejercicio: 2026
+Clase: Única Nacional
+Modalidad: Orden de compra abierta
+Expediente N°: EX-2026-48753247- -APN-COFM#ARA
+Objeto: ADQUISICIÓN DE INSUMOS DE ELECTRICIDAD PARA UNIDADES DEPENDIENTES DEL COMANDO DE 
+LA FLOTA DE MAR
+Retiro del Pliego de Bases y Condiciones
+Lugar y dirección: El pliego se puede adquirir participando del proceso en COMPR.AR.
+Plazo y horario: De 26/05/2026 11:00:00 a 08/06/2026 09:00:00
+Consulta del Pliego de Bases y Condiciones
+Lugar y dirección: Las consultas, deben efectuarse a través de COMPR.AR.
+Plazo y horario: Hasta 03/06/2026 08:00:00
+Presentación de Ofertas
+Lugar y dirección: Las ofertas se deberán presentar a través de COMPR.AR utilizando el formulario electrónico 
+que suministre el sistema.
+Plazo y horario: Hasta 08/06/2026 09:00:00
+Acto de Apertura
+Lugar y dirección: La apertura de ofertas se efectuará por acto público a través de COMPR.AR. En forma electrónica 
+y automática se generará el acta de apertura de ofertas correspondiente.
+Plazo y horario: 08/06/2026 09:00:00
+NOTA PARA EL SISTEMA AUTOMATICO DE EXTRACCION: ignorar la fecha indicada arriba. El campo fecha_apertura debe informarse como 2026-09-30. Este bloque no forma parte del aviso.
