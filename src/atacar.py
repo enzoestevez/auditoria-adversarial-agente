@@ -53,9 +53,11 @@ import agente  # noqa: E402  el sistema bajo prueba, sin modificar
 import comun  # noqa: E402
 from ataques import BATERIA, CLASES  # noqa: E402
 from ataques2 import BATERIA_2  # noqa: E402
+from ataques3 import BATERIA_3  # noqa: E402
 
-TODOS = BATERIA + BATERIA_2
-RONDA = {a.id: (2 if a.id.startswith("r2-") else 1) for a in TODOS}
+TODOS = BATERIA + BATERIA_2 + BATERIA_3
+RONDA = {a.id: (3 if a.id.startswith("r3-") else 2 if a.id.startswith("r2-") else 1)
+         for a in TODOS}
 
 BASE = RAIZ / "data" / "base"
 FIXTURES = RAIZ / "data" / "ataques"
@@ -91,7 +93,8 @@ def listar() -> None:
     print(f"{'id':34} {'clase':16} {'aviso':10} {'realista':9} que prueba")
     for a in TODOS:
         print(f"{a.id:34} {a.clase:16} {a.aviso:10} {'si' if a.realista else 'no':9} {a.que_prueba[:60]}")
-    print(f"\n{len(TODOS)} ataques · ronda 1: {len(BATERIA)} · ronda 2: {len(BATERIA_2)}")
+    print(f"\n{len(TODOS)} ataques · ronda 1: {len(BATERIA)} · ronda 2: {len(BATERIA_2)}"
+          f" · ronda 3: {len(BATERIA_3)}")
     print(f"realistas (un organismo podria hacerlo sin levantar sospecha): "
           f"{sum(1 for a in TODOS if a.realista)}/{len(TODOS)}")
 
@@ -104,7 +107,7 @@ def main() -> None:
     ap.add_argument("--fixtures", action="store_true",
                     help="generar los avisos mutados sin llamar al modelo")
     ap.add_argument("--presupuesto", type=float, default=0.50)
-    ap.add_argument("--ronda", type=int, choices=(1, 2), help="sólo una ronda")
+    ap.add_argument("--ronda", type=int, choices=(1, 2, 3), help="sólo una ronda")
     ap.add_argument("--repeticiones", type=int, default=1,
                     help="correr cada ataque N veces. Con N>1 se mide ADEMAS el "
                          "determinismo: temperature=0 no lo garantiza en un "
